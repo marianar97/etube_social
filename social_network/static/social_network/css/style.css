@@ -1,0 +1,6 @@
+.navbar-brand span {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2em;
+    /* color: #0056d2; */
+    vertical-align: middle;
+}
