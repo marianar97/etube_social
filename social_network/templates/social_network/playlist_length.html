@@ -14,16 +14,18 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
+        <div class="container-fluid">
           <a class="navbar-brand" href="">
-              <img src="{% static 'social_network/images/etube_small_logo.png' %}" height="50">
-              <span>Etube</span>
+            <img src="{% static 'social_network/images/etube_small_logo.png' %}" height="50" alt="Etube Logo">
+            <span>Etube</span>
           </a>
-      </div>
-    </nav>
+          <div class="ms-auto">
+            <a href="{% url 'login' %}" class="btn login-btn">Log In</a>
+          </div>
+        </div>
+      </nav>
   
     
-
     <div class="youtube-analyzer">
         <div class="container">
           <div class="card">
@@ -35,16 +37,19 @@
             </div>
             <p class="subtitle mb-1">Find the length of any YouTube playlist</p>
             <p class="version mb-3">Version 2.0</p>
-            <div class="input-group mb-3">
-              <input type="text" id="playlist-input" class="form-control" placeholder="Enter playlist URL, ID, or video link">
-              <button class="btn btn-dark" type="button" id="analyze-btn">
-                <svg width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
-                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                </svg>
-                Analyze
-              </button>
-            </div>
+            <form action="{% url 'playlist-length' %}" method="post">
+                <div class="input-group mb-3">
+                    <input type="text" id="playlist-input" class="form-control" name="playlist_id" placeholder="Enter playlist URL, ID, or video link">
+                    <button class="btn btn-dark" type="submit" id="analyze-btn">
+                        <svg width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                        </svg>
+                        Analyze
+                    </button>
+                </div>
+                {% csrf_token %}
+            </form>
             <p class="info d-flex align-items-center">
               <svg width="16" height="16" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -53,38 +58,46 @@
               Works with playlists up to 500 videos. For larger playlists, <a href="#">check here</a>.
             </p>
             
-            <div id="result" class="result" style="display: block;">
-              <h2 class="result-title">Playlist Analysis Result</h2>
-              <div class="row">
-                <div class="col-md-6 mb-3 mb-md-0">
-                  <img id="playlist-thumbnail" src="/placeholder.svg?height=180&width=320" alt="Playlist Thumbnail" class="img-fluid rounded">
+            {% comment %} <p>post: {{post}}</p> {% endcomment %}
+            {% if post %}
+                <div id="result" class="result" style="display: block;">
+                    {% comment %} <h2 class="result-title">Playlist Analysis Result</h2> {% endcomment %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <img id="playlist-thumbnail" src={{ playlist.img }} alt="Playlist Thumbnail" class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-6">
+                            <h3 id="playlist-title" class="h4 mb-3">{{ playlist.title }}</h3>
+                            <div class="playlist-info">
+                                <p class="mb-2">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-blue-500" style="width: 16px; height: 16px;">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                  </svg>
+                                  <span id="total-videos">Total Videos:</span> {{playlist.num_videos}}
+                                </p>
+                                <p class="mb-2">
+                                    <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                                    </svg>
+                                    <span id="total-duration">Total Duration:</span> {{ playlist.duration }}
+                                </p>
+                                <p class="mb-0">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-blue-500" style="width: 16px; height: 16px;">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                  </svg>
+                                  {% comment %} <img id="img" draggable="false" class="style-scope yt-img-shadow" alt="" width="40" src="https://yt3.ggpht.com/ytc/AIdro_lGRc-05M2OoE1ejQdxeFhyP7OkJg9h4Y-7CK_5je3QqFI=s48-c-k-c0x00ffffff-no-rj"> {% endcomment %}
+                                    {% comment %} <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+                                    </svg> {% endcomment %}
+                                    <span id="channel-name">Channel:</span> {{ playlist.channel_title}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                  <h3 id="playlist-title" class="h4 mb-3">Awesome Playlist Title</h3>
-                  <div class="playlist-info">
-                    <p class="mb-2">
-                      <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
-                      </svg>
-                      Total Videos: <span id="total-videos">42</span>
-                    </p>
-                    <p class="mb-2">
-                      <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                      </svg>
-                      Total Duration: <span id="total-duration">3 hours 27 minutes</span>
-                    </p>
-                    <p class="mb-0">
-                      <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
-                      </svg>
-                      Channel: <span id="channel-name">Amazing YouTube Channel</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -99,22 +112,7 @@
 
   
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const playlistInput = document.getElementById('playlist-input');
-  
-        analyzeBtn.addEventListener('click', function() {
-          const playlistUrl = playlistInput.value.trim();
-          if (playlistUrl) {
-            alert('Analyzing playlist: ' + playlistUrl);
-            // Here you would typically send this URL to your backend for processing
-          } else {
-            alert('Please enter a valid playlist URL, ID, or video link.');
-          }
-        });
-      });
-    </script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </body>
 </html>

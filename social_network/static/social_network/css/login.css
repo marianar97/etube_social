@@ -1,0 +1,97 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, #e6f2ff, #ffffff);
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px;
+    text-align: center;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.youtube-icon {
+    width: 40px;
+    height: 40px;
+    fill: #0056d2;
+    margin-right: 10px;
+}
+
+h1 {
+    font-size: 28px;
+    color: #0056d2;
+    margin: 0;
+}
+
+.description {
+    color: #666;
+    margin: 0;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    color: #757575;
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.google-btn:hover {
+    background-color: #f8f8f8;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.google-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+}
+
+.card-footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    border-top: 1px solid #eee;
+}
+
+.logo-name{
+    font-family: 'Poppins', sans-serif;
+    font-size: 2em;
+    vertical-align: middle;
+}

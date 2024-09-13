@@ -1,0 +1,39 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etube Login</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'social_network/css/login.css' %}">    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static 'social_network/css/style.css' %}"> {% endcomment %}
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="logo">
+                    <img src="{% static 'social_network/images/etube_small_logo.png' %}" height="50" alt="Etube Logo">
+                    <span class="logo-name">Etube</span>
+                </div>
+                <p class="description">Watch your playlists as free courses
+                </p>
+            </div>
+            <div class="card-content">
+                <button id="google-login" class="google-btn">
+                    <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                        <path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
+                    </svg>
+                    Login with Google
+                </button>
+            </div>
+            <div class="card-footer">
+                <p>By logging in, you agree to our Terms of Service and Privacy Policy.</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
