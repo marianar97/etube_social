@@ -16,8 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth.models import User
+from allauth.socialaccount.models import SocialToken, SocialAccount
+from google.oauth2.credentials import Credentials
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('social_network.urls'))
+    path('', include('social_network.urls')),
+	path('accounts/', include('allauth.urls')),
 ]
