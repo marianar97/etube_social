@@ -24,10 +24,6 @@
             <span>Etube</span>
           </a>
             <button class="login-btn" onclick="openModal()">Log In</button>
-
-          {% comment %} <div class="ms-auto">
-            <a href="{% url 'login' %}" class="btn login-btn">Log In</a>
-          </div> {% endcomment %}
         </div>
       </nav>
   
@@ -39,10 +35,9 @@
               <svg class="youtube-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
-              <h1 class="h3 mb-0">YouTube Playlist Analyzer</h1>
+              <h1 class="h3 mb-0">YouTube Playlist Length Analyzer</h1>
             </div>
             <p class="subtitle mb-1">Find the length of any YouTube playlist</p>
-            <p class="version mb-3">Version 2.0</p>
             <form action="{% url 'playlist-length' %}" method="post">
                 <div class="input-group mb-3">
                     <input type="text" id="playlist-input" class="form-control" name="playlist_id" placeholder="Enter playlist URL, ID, or video link">
@@ -56,22 +51,20 @@
                 </div>
                 {% csrf_token %}
             </form>
-            <p class="info d-flex align-items-center">
-              <svg width="16" height="16" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-              </svg>
-              Works with playlists up to 500 videos. For larger playlists, <a href="#">check here</a>.
-            </p>
+           
             
-            {% comment %} <p>post: {{post}}</p> {% endcomment %}
             {% if post %}
                 <div id="result" class="result" style="display: block;">
-                    {% comment %} <h2 class="result-title">Playlist Analysis Result</h2> {% endcomment %}
                     <div class="row">
                         <div class="col-md-6 mb-3 mb-md-0">
-                            <img id="playlist-thumbnail" src={{ playlist.img }} alt="Playlist Thumbnail" class="img-fluid rounded">
+                          <a class="playlist-thumbnail-container" onclick="openModal()">
+                            <img id="playlist-thumbnail" src="{{ playlist.thumbnail }}" alt="Playlist Thumbnail" class="img-fluid rounded">
+                            <div class="hover-text">
+                              <span>Watch as online course</span>
+                            </div>
+                          </a>
                         </div>
+                          
                         <div class="col-md-6">
                             <h3 id="playlist-title" class="h4 mb-3">{{ playlist.title }}</h3>
                             <div class="playlist-info">
@@ -93,10 +86,6 @@
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="12" cy="7" r="4"></circle>
                                   </svg>
-                                  {% comment %} <img id="img" draggable="false" class="style-scope yt-img-shadow" alt="" width="40" src="https://yt3.ggpht.com/ytc/AIdro_lGRc-05M2OoE1ejQdxeFhyP7OkJg9h4Y-7CK_5je3QqFI=s48-c-k-c0x00ffffff-no-rj"> {% endcomment %}
-                                    {% comment %} <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
-                                        <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
-                                    </svg> {% endcomment %}
                                     <span id="channel-name">Channel:</span> {{ playlist.channel_title}}
                                 </p>
                             </div>
@@ -117,7 +106,9 @@
                   <p>Watch your playlists as free courses</p>
                 </div>
 
-                <a class="google-btn"  href="{% provider_login_url 'google' %}?next=/">
+
+                <a class="google-btn" href="{% provider_login_url 'google' %}?next=/?playlist_id={{ playlist.playlist_id|urlencode }}">
+                {% comment %} <a class="google-btn"  href="{% provider_login_url 'google' %}?&playlist_id={{playlist.playlist_id}}"> {% endcomment %}
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
                     Continue with Google
                 </a>

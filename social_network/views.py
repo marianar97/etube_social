@@ -2,18 +2,22 @@ import re
 from django.forms import ValidationError
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render
+from django.forms.models import model_to_dict
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
 from datetime import timedelta
+from .models import Playlist, Video
 
-
+def courses_view(request: HttpRequest):
+    # return render(request, 'social_network/course.html')
+    # print(f'playlist_id: {request.GET}')
+    return render(request, 'social_network/base.html')
 
 # Create your views here.
 def login_view(request: HttpRequest):
     return render(request, 'social_network/login.html')
 
 def playlist_length_view(request: HttpRequest):
-
     if request.method == "GET":
         return render(request, 'social_network/playlist_length.html')
     
@@ -31,19 +35,48 @@ def playlist_length_view(request: HttpRequest):
             return _playlists_details_view(request, id)
     
 def _playlists_details_view(request: HttpResponse, id:str ):
-    playlist_details = _get_playlist_info(id)
-    print(f'playlist details: {playlist_details['title']}')
+    playlist_details = _get_playlist_info(request, id)
+    print(f'playlist details: {playlist_details}')
     return render(request, 'social_network/playlist_length.html', {'post': True, 'playlist': playlist_details})
 
 
-def _get_playlist_info(id: str) -> dict:
+def _get_playlist_info(request: HttpRequest, id: str) -> dict:
+    playlist = Playlist.objects.get(id=id)
+    if playlist: #if playlist in database return
+        print(f'playlist exists: {playlist}')
+        return model_to_dict(playlist)
+
     youtube = build('youtube', 'v3', developerKey="")
     playlist = _get_playlist_details(id, youtube)
-    num_videos, duration , _ = _get_playlist_videos_and_duration(id, youtube)
+    num_videos, seconds , videos = _get_playlist_videos_and_duration(id, youtube)
+    duration = _convert_seconds_to_hms(seconds)
     str_duration = _get_str_duration(duration)
     playlist['num_videos'] = num_videos
     playlist['duration'] = str_duration
+    playlist['seconds'] = seconds
+    _save_playlist_and_videos(request, playlist, videos)
     return playlist
+
+def _save_playlist_and_videos(request: HttpRequest, playlist: dict , videos: dict) -> None:
+    pl = Playlist(
+        id= playlist['playlist_id'],
+        seconds = playlist['seconds'],
+        title = playlist['title'],
+        thumbnail = playlist['img'],
+        num_videos = playlist['num_videos']
+    )
+    pl.save()
+
+    for video_id, video_info in videos.items():
+        vd = Video (
+            id = video_id,
+            playlist = pl,
+            title = video_info['title'],
+            seconds = video_info['duration'],
+            thumbnail = video_info['thumbnail'],
+            url = video_info['url']
+        )
+        vd.save()
 
 def _get_str_duration(duration: tuple):
     hours, mins, secs = duration
@@ -68,7 +101,7 @@ def _get_playlist_details(playlist_id: str, youtube) -> dict:
         id=playlist_id
     )
     response = request.execute()
-    playlist = {}
+    playlist = {'playlist_id': playlist_id}
     playlist_info = response['items'][0]['snippet']
     playlist['title'] = playlist_info['title']
     playlist['img'] = playlist_info['thumbnails']['medium']['url']
@@ -128,8 +161,7 @@ def _get_playlist_videos_and_duration(playlist_id: str, youtube):
         if not next_page_token:
             break
     
-    duration = _convert_seconds_to_hms(seconds)
-    return num_videos, duration, videos
+    return num_videos, seconds, videos
 
 def _convert_seconds_to_hms(total_seconds: int):
     # Calculate hours
