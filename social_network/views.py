@@ -94,18 +94,16 @@ def _save_playlist_and_videos(playlist: dict , videos: dict) -> None:
     pl.save()
 
     for video_id, video_info in videos.items():
-        video = Video.objects.filter(id=video_id).first()
-        if not video:
-            video = Video (
-                id = video_id,
-                title = video_info['title'],
-                seconds = video_info['duration'],
-                thumbnail = video_info['thumbnail'],
-                url = video_info['url'],
-            )
-        video.playlist.add(pl)
+        video, _ = Video.objects.get_or_create(
+            id = video_id,
+            title = video_info['title'],
+            seconds = video_info['duration'],
+            thumbnail = video_info['thumbnail'],
+            url = video_info['url'],
+        )
+        # video.playlist.add(pl)
+        PlaylistVideo.objects.create(playlist=pl, video=video, position=video_info['position'])
         video.save()
-        PlaylistVideo.objects.create(playlist=playlist, video=video, position=video_info['position'])
 
 def _get_str_duration(duration: tuple):
     hours, mins, secs = duration
@@ -185,7 +183,7 @@ def _get_playlist_videos_and_duration(playlist_id: str, youtube):
             src = match.group(1)
             seconds += duration    
             videos[id]['url'] = '//'+src    
-            video[id]['postion'] = i
+            videos[id]['position'] = i
             
 
         next_page_token = pl_response.get('nextPageToken')
