@@ -7,7 +7,7 @@ from urllib.parse import urlparse, parse_qs
 from django.urls import reverse
 from googleapiclient.discovery import build
 from datetime import timedelta
-from .models import Playlist, PlaylistVideo, UserPlaylist, Video
+from .models import Playlist, PlaylistVideo, UserPlaylist, UserPlaylistVideo, Video
 
 def courses_view(request: HttpRequest):
     # return render(request, 'social_network/course.html')
@@ -20,23 +20,31 @@ def courses_view(request: HttpRequest):
 
 def course_view(request:HttpRequest, playlist_id: str):
     playlist = get_object_or_404(Playlist, pk=playlist_id)
-    user_playlist = UserPlaylist.objects.filter(user=request.user, playlist=playlist)
-    if not user_playlist:
-        user_playlist = UserPlaylist(user=request.user, playlist=playlist)
-        user_playlist.save()
+    user_playlist, _ = UserPlaylist.objects.get_or_create(
+        user=request.user,
+        playlist = playlist
+    )
 
-    # get info about the video to play
-    video_id = request.GET.get("v")
-    # if not video_id:
+    videos_id = PlaylistVideo.objects.filter(playlist=playlist).order_by('position').values_list('video_id', flat=True)
 
+    id = request.GET.get('v')
+    first_video = Video.objects.filter(id=id).first()
 
-    return render(request, 'social_network/course.html')
-    # video_id = request.GET.get(video_id = )
-
-    # videos = Video.objects.filter(Playlist=playlist)
-    # for video in videos:
-
+    videos = [] 
+    for video_id in videos_id:
+        video = {}
+        video['id'] = video_id
+        vd = Video.objects.get(id=video_id)
+        video['title'] = vd.title 
+        user_playlist_video, _ = UserPlaylistVideo.objects.get_or_create(user_playlist=user_playlist, video=vd)
+        video['watched'] = user_playlist_video.watched
+        if not first_video and user_playlist_video.watched==False:
+            first_video = vd
+        videos.append(video)
     
+    context = {'playlist': playlist, 'videos': videos, 'current_video': first_video}
+    return render(request, 'social_network/course.html', context)
+
 
 # Create your views here.
 def login_view(request: HttpRequest):
