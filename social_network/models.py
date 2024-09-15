@@ -7,6 +7,7 @@ class Playlist(models.Model):
     title = models.CharField(max_length=200)
     thumbnail =  models.CharField(max_length=300)
     num_videos = models.IntegerField(default=0)
+    channel_title = models.CharField(max_length=255)
 
     def __str__(self):
         return f"id={self.id}, title={self.title}"
@@ -14,7 +15,7 @@ class Playlist(models.Model):
 
 class Video(models.Model):
     id = models.CharField(primary_key=True, max_length=300)
-    playlist = models.ForeignKey(Playlist, related_name='videos', on_delete=models.CASCADE)
+    playlist = models.ManyToManyField(Playlist, through="PlaylistVideo")
     title = models.CharField(max_length=255)
     seconds = models.IntegerField()
     thumbnail = models.CharField(max_length=300)
@@ -22,7 +23,11 @@ class Video(models.Model):
 
     def __str__(self):
         return f"id={self.id}, title={self.title}"
-
+    
+class PlaylistVideo(models.Model):
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    video = models.ForeignKey(Video, on_delete=models.CASCADE)
+    position = models.IntegerField()
 
 class UserPlaylist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

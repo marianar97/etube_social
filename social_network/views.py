@@ -1,17 +1,42 @@
 import re
 from django.forms import ValidationError
 from django.http import HttpResponse, HttpRequest
-from django.shortcuts import render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.forms.models import model_to_dict
 from urllib.parse import urlparse, parse_qs
+from django.urls import reverse
 from googleapiclient.discovery import build
 from datetime import timedelta
-from .models import Playlist, Video
+from .models import Playlist, PlaylistVideo, UserPlaylist, Video
 
 def courses_view(request: HttpRequest):
     # return render(request, 'social_network/course.html')
-    # print(f'playlist_id: {request.GET}')
+    print(f'in course_view: playlist_id: {request.GET}')
+    playlist_id = request.GET.get('playlist_id') 
+    if playlist_id != '' and playlist_id is not None:
+        return redirect(reverse('course',kwargs={'playlist_id':playlist_id}))
+        # return course_view(request, playlist_id)
     return render(request, 'social_network/base.html')
+
+def course_view(request:HttpRequest, playlist_id: str):
+    playlist = get_object_or_404(Playlist, pk=playlist_id)
+    user_playlist = UserPlaylist.objects.filter(user=request.user, playlist=playlist)
+    if not user_playlist:
+        user_playlist = UserPlaylist(user=request.user, playlist=playlist)
+        user_playlist.save()
+
+    # get info about the video to play
+    video_id = request.GET.get("v")
+    # if not video_id:
+
+
+    return render(request, 'social_network/course.html')
+    # video_id = request.GET.get(video_id = )
+
+    # videos = Video.objects.filter(Playlist=playlist)
+    # for video in videos:
+
+    
 
 # Create your views here.
 def login_view(request: HttpRequest):
@@ -39,44 +64,48 @@ def _playlists_details_view(request: HttpResponse, id:str ):
     print(f'playlist details: {playlist_details}')
     return render(request, 'social_network/playlist_length.html', {'post': True, 'playlist': playlist_details})
 
-
 def _get_playlist_info(request: HttpRequest, id: str) -> dict:
-    playlist = Playlist.objects.get(id=id)
+    playlist = Playlist.objects.filter(id=id).first()
     if playlist: #if playlist in database return
-        print(f'playlist exists: {playlist}')
-        return model_to_dict(playlist)
-
-    youtube = build('youtube', 'v3', developerKey="")
-    playlist = _get_playlist_details(id, youtube)
-    num_videos, seconds , videos = _get_playlist_videos_and_duration(id, youtube)
+        playlist = model_to_dict(playlist)
+        seconds = playlist['seconds']
+    else:
+        youtube = build('youtube', 'v3', developerKey="")
+        playlist = _get_playlist_details(id, youtube)
+        num_videos, seconds , videos = _get_playlist_videos_and_duration(id, youtube)
+        playlist['num_videos'] = num_videos
+        playlist['seconds'] = seconds
+        _save_playlist_and_videos(playlist, videos)
+    
     duration = _convert_seconds_to_hms(seconds)
     str_duration = _get_str_duration(duration)
-    playlist['num_videos'] = num_videos
     playlist['duration'] = str_duration
-    playlist['seconds'] = seconds
-    _save_playlist_and_videos(request, playlist, videos)
     return playlist
 
-def _save_playlist_and_videos(request: HttpRequest, playlist: dict , videos: dict) -> None:
+def _save_playlist_and_videos(playlist: dict , videos: dict) -> None:
     pl = Playlist(
-        id= playlist['playlist_id'],
+        id= playlist['id'],
         seconds = playlist['seconds'],
         title = playlist['title'],
-        thumbnail = playlist['img'],
-        num_videos = playlist['num_videos']
+        thumbnail = playlist['thumbnail'],
+        num_videos = playlist['num_videos'],
+        channel_title = playlist['channel_title']
     )
     pl.save()
 
     for video_id, video_info in videos.items():
-        vd = Video (
-            id = video_id,
-            playlist = pl,
-            title = video_info['title'],
-            seconds = video_info['duration'],
-            thumbnail = video_info['thumbnail'],
-            url = video_info['url']
-        )
-        vd.save()
+        video = Video.objects.filter(id=video_id).first()
+        if not video:
+            video = Video (
+                id = video_id,
+                title = video_info['title'],
+                seconds = video_info['duration'],
+                thumbnail = video_info['thumbnail'],
+                url = video_info['url'],
+            )
+        video.playlist.add(pl)
+        video.save()
+        PlaylistVideo.objects.create(playlist=playlist, video=video, position=video_info['position'])
 
 def _get_str_duration(duration: tuple):
     hours, mins, secs = duration
@@ -101,10 +130,10 @@ def _get_playlist_details(playlist_id: str, youtube) -> dict:
         id=playlist_id
     )
     response = request.execute()
-    playlist = {'playlist_id': playlist_id}
+    playlist = {'id': playlist_id}
     playlist_info = response['items'][0]['snippet']
     playlist['title'] = playlist_info['title']
-    playlist['img'] = playlist_info['thumbnails']['medium']['url']
+    playlist['thumbnail'] = playlist_info['thumbnails']['medium']['url']
     playlist['channel_title'] = playlist_info['channelTitle']
     return playlist
 
@@ -144,7 +173,7 @@ def _get_playlist_videos_and_duration(playlist_id: str, youtube):
         )
 
         vid_response = vid_request.execute()
-        for video in vid_response['items']:
+        for i, video in enumerate(vid_response['items']):
             if video['id'] not in videos:
                 continue # if video not in the playlist 
             
@@ -156,6 +185,8 @@ def _get_playlist_videos_and_duration(playlist_id: str, youtube):
             src = match.group(1)
             seconds += duration    
             videos[id]['url'] = '//'+src    
+            video[id]['postion'] = i
+            
 
         next_page_token = pl_response.get('nextPageToken')
         if not next_page_token:
