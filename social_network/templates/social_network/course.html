@@ -1,13 +1,13 @@
 {% extends "social_network/base.html" %}
 {% load static %}
 {% block content %}
-<script src="{% static 'social_network/scripts/youtube_player.js' %}" type="text/javascript"></script>
+<meta name="csrf-token" content="{{ csrf_token }}">
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-lg-8">
             <div class="main-player-container">
                 <div id="player" ></div>
-                <p id="video-id" videoId={{current_video.id}}></p>
+                <p id="video-id" videoId={{current_video.id}} seconds={{current_video.seconds}} playlistId={{playlist.id}}></p>
             </div>
             <h1 class="video-title">{{current_video.title}}</h1>
             <div class="video-meta">
@@ -19,14 +19,14 @@
         <div class="col-lg-4">
             <div class="playlist-container">
                 <h3 class="playlist-title">{{playlist.title}}</h3>
-                <div class="progress mb-3">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
-                        60% completed
+                <div class="progress-container mb-3">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{playlist.percent_completed}}%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                        <span id="perc_completed"> {{playlist.percent_completed}} % completed </span> 
                     </div>
                 </div>
                 <div class="video-list">
                     {% for video in videos %}
-                        <div class="video-item">
+                        <div class="video-item {%if video.id == current_video.id %} active-item {%endif%}" id={{video.id}}>
                             <a href="{% url 'course' playlist.id %}?v={{video.id}}">
                                 <div class="row g-0">
                                     <div class="col-4">
@@ -50,5 +50,6 @@
         </div>
     </div>
 </div>
+<script src="{% static 'social_network/scripts/youtube_player.js' %}" type="text/javascript"></script>
 
 {% endblock %}

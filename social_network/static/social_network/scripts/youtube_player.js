@@ -18,16 +18,16 @@ function onYouTubeIframeAPIReady() {
     vidId = document.getElementById("video-id");
     idValue = vidId.getAttribute("videoId");
     player = new YT.Player('player', {
-    height: '770',
-    width: '1350',
-    videoId: idValue,
-    playerVars: {
-        'playsinline': 1
-    },
-    events: {
-        'onReady': onPlayerReady,
-        'onStateChange': onPlayerStateChange
-    }
+        height: '770',
+        width: '1350',
+        videoId: idValue,
+        playerVars: {
+            'playsinline': 1
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
     });
 }
 
@@ -42,6 +42,7 @@ function onPlayerReady(event) {
 var done = false;
 
 function onPlayerStateChange(event) {
+    // console.log('calling onPlayerStateChange')
     // if (event.data == YT.PlayerState.PLAYING && !done) {
     //     setTimeout(stopVideo, 6000);
     //     done = true;
@@ -54,7 +55,8 @@ function onPlayerStateChange(event) {
             // Start an interval to log the current time every 3 seconds
             intervalId = setInterval(function() {
                 if (isWatched() == true){
-                    document.getElementById(idValue).style.backgroundColor = "rgb(67, 152, 67)";
+                    // console.log('id value: ' + idValue)
+                    document.getElementById(idValue).classList.add('watched')
                     if (sentVideoWatched === false) {
                         sendWatchedVideo();
                     } else {
@@ -73,10 +75,11 @@ function onPlayerStateChange(event) {
 }
 
 function isWatched(){
-    let total_mins = vidId.getAttribute("mins");
+    let seconds = vidId.getAttribute("seconds");
     cur = player.getCurrentTime();
-    tot_percentage = cur / (total_mins * 60);
+    tot_percentage = cur / (seconds);
     if (tot_percentage > .9) {
+        // console.log('watched');
         return true;
     } else{
         return false;
@@ -84,10 +87,11 @@ function isWatched(){
 }
 
 function sendWatchedVideo(){
+    // console.log("HEREEEE");
     console.log("sending video as watched")
     crsfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     vidId = document.getElementById("video-id");
-    courseId = vidId.getAttribute("courseId");
+    playlistId = vidId.getAttribute("playlistId");
 
     let xhr = new XMLHttpRequest();
     xhr.open("POST", '/video-watched', true);
@@ -96,11 +100,14 @@ function sendWatchedVideo(){
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState !== 4) return
+        console.log('responseText ' + this.responseText);
         const obj = JSON.parse(this.responseText); 
-        document.getElementById("perc_completed").innerHTML = obj.perc_completed;
+        console.log("response text: " + obj);
+        console.log(document.getElementById("perc_completed"))
+        document.getElementById("perc_completed").innerText = obj.perc_completed + "% completed";
     }
 
-    xhr.send("videoId=" + encodeURIComponent(idValue) + "&courseId=" + encodeURIComponent(courseId));
+    xhr.send("videoId=" + encodeURIComponent(idValue) + "&playlistId=" + encodeURIComponent(playlistId));
     sentVideoWatched = true;
 
 }

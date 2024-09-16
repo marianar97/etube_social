@@ -35,6 +35,7 @@ class PlaylistVideo(models.Model):
 class UserPlaylist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    percent_completed = models.DecimalField(decimal_places=2, max_digits=10, default=0.0)
 
     def __str__(self):
         return f"{self.user.username} - {self.playlist.title}"

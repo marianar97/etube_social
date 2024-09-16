@@ -56,6 +56,10 @@
     background-color: #e6e6e6;
 }
 
+.active-item {
+    background-color: #dbeafe;
+}
+
 .video-item a {
     text-decoration: none;
     color: black;
@@ -115,4 +119,16 @@
 .video-image{
     width: 100%;
     border-radius: 5px;
+}
+
+.watched{
+    background-color: #c8e7c8;
+}
+
+.progress-container{
+    display: flex;
+    height: 2rem; 
+    overflow: hidden;
+    background-color: #e9ecef;
+    border-radius: .25rem;
 }

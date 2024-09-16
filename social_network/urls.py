@@ -6,4 +6,5 @@ urlpatterns = [
     path('login', views.login_view, name='login'),
     path('', views.courses_view, name='courses'),
     path('course/<str:playlist_id>', views.course_view, name='course'),
+    path('video-watched', views.video_watched, name='video-watched'),
 ]

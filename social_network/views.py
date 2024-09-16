@@ -1,6 +1,6 @@
 import re
 from django.forms import ValidationError
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.forms.models import model_to_dict
 from urllib.parse import urlparse, parse_qs
@@ -45,6 +45,8 @@ def course_view(request:HttpRequest, playlist_id: str):
             first_video = vd
         videos.append(video)
     
+    playlist = model_to_dict(playlist)
+    playlist['percent_completed'] = int(user_playlist.percent_completed * 100)
     context = {'playlist': playlist, 'videos': videos, 'current_video': first_video}
     return render(request, 'social_network/course.html', context)
 
@@ -74,6 +76,53 @@ def _playlists_details_view(request: HttpResponse, id:str ):
     playlist_details = _get_playlist_info(request, id)
     print(f'playlist details: {playlist_details}')
     return render(request, 'social_network/playlist_length.html', {'post': True, 'playlist': playlist_details})
+
+def video_watched(request: HttpResponse) -> JsonResponse:
+    video_id = request.POST.get('videoId')
+    playlist_id = request.POST.get('playlistId')
+
+    playlist = Playlist.objects.filter(id=playlist_id).first()
+    if not playlist:
+        response_data = {
+            'status': 404,
+            'message': f'Playlist not found: {playlist_id}',
+        }
+        return JsonResponse(response_data)
+    
+    video = Video.objects.filter(id=video_id).first()
+    if not video:
+        response_data = {
+            'status': 404,
+            'message': f'Video not found: {video_id}',
+        }
+        return JsonResponse(response_data)
+    
+    user_playlist = UserPlaylist.objects.filter(user=request.user, playlist=playlist).first()
+    if not user_playlist:
+        response_data = {
+            'status': 404,
+            'message': f'User does not have course: {playlist_id}',
+        }
+        return JsonResponse(response_data)       
+
+    user_playlist_video = UserPlaylistVideo.objects.filter(user_playlist=user_playlist, video=video).first()
+    user_playlist_video.watched = True
+    user_playlist_video.save()
+
+    num_videos = playlist.num_videos
+    num_watched_videos = UserPlaylistVideo.objects.filter(user_playlist=user_playlist, watched=True).count()
+    percentage_watched = num_watched_videos/num_videos
+    user_playlist.percent_completed = percentage_watched
+    user_playlist.save()
+
+    response_data = {
+        'status': 200,
+        'message': 'Video updated as watched',
+        'videoId': video_id,
+        'playlistId': playlist_id,
+        'perc_completed': int(percentage_watched*100)
+    }
+    return JsonResponse(response_data)
 
 def _get_playlist_info(request: HttpRequest, id: str) -> dict:
     playlist = Playlist.objects.filter(id=id).first()
