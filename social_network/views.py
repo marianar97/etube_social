@@ -38,6 +38,9 @@ def course_view(request:HttpRequest, playlist_id: str):
         video['title'] = vd.title 
         user_playlist_video, _ = UserPlaylistVideo.objects.get_or_create(user_playlist=user_playlist, video=vd)
         video['watched'] = user_playlist_video.watched
+        duration = _convert_seconds_to_hms(vd.seconds)
+        video['duration'] = _get_video_str_duration(duration)
+        video['thumbnail'] = vd.thumbnail
         if not first_video and user_playlist_video.watched==False:
             first_video = vd
         videos.append(video)
@@ -86,9 +89,24 @@ def _get_playlist_info(request: HttpRequest, id: str) -> dict:
         _save_playlist_and_videos(playlist, videos)
     
     duration = _convert_seconds_to_hms(seconds)
-    str_duration = _get_str_duration(duration)
+    str_duration = _get_video_str_duration(duration)
     playlist['duration'] = str_duration
     return playlist
+
+def _get_video_str_duration(duration: tuple):
+    hour, minutes, seconds = duration
+    str_duration = ""
+    if hour > 0:
+        str_duration += f'{hour}'
+    if minutes > 0:
+        if hour > 0:
+            str_duration += f':'
+        str_duration += f'{minutes}'
+    if seconds > 0:
+        if minutes > 0:
+            str_duration += f':'
+        str_duration += f'{seconds}'
+    return str_duration
 
 def _save_playlist_and_videos(playlist: dict , videos: dict) -> None:
     pl = Playlist(
@@ -119,15 +137,9 @@ def _get_str_duration(duration: tuple):
     if hours > 0:
         dur += f'{int(hours)} hours'
     if mins > 0:
-        if hours > 0:
-            dur += f", {int(mins)} minutes"
-        else:
-            dur += f"{int(mins)} minutes"
+        dur += f"{int(mins)} minutes"
     if secs > 0:
-        if mins > 0 or hours > 0:
-            dur += f", {int(secs)} seconds"
-        else:
-            dur += f"{int(secs)} seconds"
+        dur += f"{int(secs)} seconds"
     return dur
 
 def _get_playlist_details(playlist_id: str, youtube) -> dict:
@@ -165,9 +177,7 @@ def _get_playlist_videos_and_duration(playlist_id: str, youtube):
             # print(f"item: {item}")
             video = {}
             video['title'] = item['snippet']['title']
-            # video['description'] = item['snippet']['description']
-            video['thumbnail'] = item['snippet']['thumbnails']
-
+            video['thumbnail'] = item['snippet']['thumbnails']['medium']['url']
             video['playlist_id'] = playlist_id
             id_video = item['snippet']['resourceId']['videoId']
             videos[id_video] = video

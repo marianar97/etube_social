@@ -29,6 +29,9 @@ class PlaylistVideo(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
     position = models.IntegerField()
 
+    def __str__(self):
+        return f"{self.playlist} - {self.video} position {self.position}"
+
 class UserPlaylist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
