@@ -19,14 +19,15 @@
         <div class="col-lg-4">
             <div class="playlist-container">
                 <h3 class="playlist-title">{{playlist.title}}</h3>
-                <div class="progress-container mb-3">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{playlist.percent_completed}}%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
-                        <span id="perc_completed"> {{playlist.percent_completed}} % completed </span> 
+                <div class="progress-container">
+                    <div class="progress">
+                        <div class="progress-bar" id="progressbar" role="progressbar" style="width: {{playlist.percent_completed}}%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
+                    <span class="progress-text" id="perc_completed">{{playlist.percent_completed}}% completed</span>
                 </div>
                 <div class="video-list">
                     {% for video in videos %}
-                        <div class="video-item {%if video.id == current_video.id %} active-item {%endif%}" id={{video.id}}>
+                        <div class="video-item {%if video.id == current_video.id %} active-item {%endif%} {% if video.watched %} watched {% endif %} {% if video.watched and video.id == current_video.id %} watched-active {% endif %} " id={{video.id}}>
                             <a href="{% url 'course' playlist.id %}?v={{video.id}}">
                                 <div class="row g-0">
                                     <div class="col-4">

@@ -4,6 +4,7 @@
     padding-top: 56.25%; /* 16:9 aspect ratio */
     width: 100%;
     background-color: #000;
+    border-radius: 5px;
 }
 
 #player {
@@ -131,4 +132,38 @@
     overflow: hidden;
     background-color: #e9ecef;
     border-radius: .25rem;
+}
+
+/* Progress bar styles */
+.progress-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.progress {
+    flex-grow: 1;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 10px;
+    border: rgb(159, 159, 159) solid 1px;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 14px;
+    color: #606060;
+    white-space: nowrap;
+    min-width: 80px; /* Adjust as needed to fit your text */
+    text-align: right;
+}
+
+.watched-active{
+    border: #28a528 solid 2px;
 }

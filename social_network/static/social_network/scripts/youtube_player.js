@@ -105,6 +105,7 @@ function sendWatchedVideo(){
         console.log("response text: " + obj);
         console.log(document.getElementById("perc_completed"))
         document.getElementById("perc_completed").innerText = obj.perc_completed + "% completed";
+        document.getElementById("progressbar").style.width = obj.perc_completed + "%";
     }
 
     xhr.send("videoId=" + encodeURIComponent(idValue) + "&playlistId=" + encodeURIComponent(playlistId));

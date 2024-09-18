@@ -8,6 +8,7 @@ class Playlist(models.Model):
     thumbnail =  models.CharField(max_length=300)
     num_videos = models.IntegerField(default=0)
     channel_title = models.CharField(max_length=255)
+    description = models.TextField(default="")
 
     def __str__(self):
         return f"id={self.id}, title={self.title}"
@@ -35,7 +36,7 @@ class PlaylistVideo(models.Model):
 class UserPlaylist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
-    percent_completed = models.DecimalField(decimal_places=2, max_digits=10, default=0.0)
+    percent_completed = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.username} - {self.playlist.title}"

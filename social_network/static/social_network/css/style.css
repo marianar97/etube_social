@@ -108,3 +108,12 @@
 .nav-option{
     font-size: 1.2em;
 }
+
+.nav-tab{
+    padding: 0%;
+    color: black;
+}
+
+.profile-picture{
+    border-radius: 50%;
+}

@@ -1,0 +1,119 @@
+.courses-container {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.course-progress{
+    width: 40%;
+    float:right;
+}
+
+.courses-container h1 {
+    font-weight: bold;
+}
+
+.course-progress-container{
+    display: flex;
+    justify-content: space-between;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.search-bar {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    height: 2rem;
+}
+
+.search-bar:focus{
+    color: #212529;
+    background-color: #fff;
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
+}
+
+.course-section {
+    margin-bottom: 30px;
+}
+
+.course-section h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.course-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+}
+
+.course-icon {
+    height: 100%;
+    margin-right: 10px;
+    vertical-align: middle;
+    border-radius: 5px;
+}
+
+.course-info{
+    width: 100%;
+}
+.course-title {
+    font-weight: bold;
+    font-size: 16px;
+}
+.course-duration {
+    color: #666;
+    font-size: 14px;
+}
+.course-description {
+    margin-top: 5px;
+    font-size: 14px;
+}
+.start-button {
+    float: right;
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+
+}
+
+.start-button:hover {
+    background-color: white;
+    color: #4285f4;
+    box-shadow: 0 4px 6px rgba(0, 86, 210, 0.1);
+    transform: translateY(-2px);
+}
+
+.progress-bar {
+    background-color: #e0e0e0;
+    height: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+.progress-fill {
+    background-color: #ffd700;
+    height: 100%;
+    border-radius: 4px;
+}
+.progress-text {
+    float: right;
+    font-size: 14px;
+    color: #666;
+}

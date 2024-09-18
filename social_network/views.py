@@ -1,5 +1,4 @@
 import re
-from django.forms import ValidationError
 from django.http import HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.forms.models import model_to_dict
@@ -8,16 +7,66 @@ from django.urls import reverse
 from googleapiclient.discovery import build
 from datetime import timedelta
 from .models import Playlist, PlaylistVideo, UserPlaylist, UserPlaylistVideo, Video
+from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 
-def courses_view(request: HttpRequest):
-    # return render(request, 'social_network/course.html')
-    print(f'in course_view: playlist_id: {request.GET}')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect(reverse('playlist-length'))
+
+@login_required
+def courses_view(request: HttpRequest) -> HttpResponse:
+
+
+
     playlist_id = request.GET.get('playlist_id') 
     if playlist_id != '' and playlist_id is not None:
-        return redirect(reverse('course',kwargs={'playlist_id':playlist_id}))
+        return redirect(reverse('course', kwargs={'playlist_id':playlist_id}))
         # return course_view(request, playlist_id)
-    return render(request, 'social_network/base.html')
 
+    extra_data = SocialAccount.objects.get(user=request.user).extra_data
+    userplaylist_not_started = UserPlaylist.objects.filter(
+        user=request.user, 
+        percent_completed=0
+    )
+    not_started = Playlist.objects.filter(
+        userplaylist__in = userplaylist_not_started
+    )   
+
+    
+    userplaylist_in_progress = UserPlaylist.objects.filter(
+        user=request.user, 
+        percent_completed__gt=0,  
+        percent_completed__lt=100 
+    ).select_related('playlist')  # This fetches the related Playlist object
+
+    # Step 2: Build a dictionary with both Playlist details and percent_completed
+    in_progress_playlists = userplaylist_in_progress.values(
+        'playlist__id',               # Playlist ID
+        'playlist__title',            # Playlist title
+        'playlist__channel_title',    # Playlist channel title
+        'percent_completed',          # User's percent completed in the playlist,
+        'playlist__thumbnail',
+        'playlist__description'
+    )
+
+    # Output as a list of dictionaries
+    in_progress = list(in_progress_playlists)
+
+
+    done = Playlist.objects.filter(
+        userplaylist__in=UserPlaylist.objects.filter(
+            user=request.user, 
+            percent_completed=100
+        )
+    )     
+    context = {'not_started': not_started, 'in_progress': in_progress, 'done':done, 'picture': extra_data['picture']}
+    return render(request, 'social_network/courses.html', context=context)
+
+@login_required
 def course_view(request:HttpRequest, playlist_id: str):
     playlist = get_object_or_404(Playlist, pk=playlist_id)
     user_playlist, _ = UserPlaylist.objects.get_or_create(
@@ -46,8 +95,11 @@ def course_view(request:HttpRequest, playlist_id: str):
         videos.append(video)
     
     playlist = model_to_dict(playlist)
-    playlist['percent_completed'] = int(user_playlist.percent_completed * 100)
-    context = {'playlist': playlist, 'videos': videos, 'current_video': first_video}
+    playlist['percent_completed'] = int(user_playlist.percent_completed)
+    
+    extra_data = SocialAccount.objects.get(user=request.user).extra_data
+
+    context = {'playlist': playlist, 'videos': videos, 'current_video': first_video, 'picture': extra_data['picture'] }
     return render(request, 'social_network/course.html', context)
 
 
@@ -112,7 +164,7 @@ def video_watched(request: HttpResponse) -> JsonResponse:
     num_videos = playlist.num_videos
     num_watched_videos = UserPlaylistVideo.objects.filter(user_playlist=user_playlist, watched=True).count()
     percentage_watched = num_watched_videos/num_videos
-    user_playlist.percent_completed = percentage_watched
+    user_playlist.percent_completed = int(percentage_watched * 100)
     user_playlist.save()
 
     response_data = {
@@ -164,7 +216,8 @@ def _save_playlist_and_videos(playlist: dict , videos: dict) -> None:
         title = playlist['title'],
         thumbnail = playlist['thumbnail'],
         num_videos = playlist['num_videos'],
-        channel_title = playlist['channel_title']
+        channel_title = playlist['channel_title'],
+        description = playlist['description'],
     )
     pl.save()
 
@@ -200,6 +253,7 @@ def _get_playlist_details(playlist_id: str, youtube) -> dict:
     playlist = {'id': playlist_id}
     playlist_info = response['items'][0]['snippet']
     playlist['title'] = playlist_info['title']
+    playlist['description'] = playlist_info['description']
     playlist['thumbnail'] = playlist_info['thumbnails']['medium']['url']
     playlist['channel_title'] = playlist_info['channelTitle']
     return playlist
