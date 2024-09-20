@@ -12,7 +12,7 @@ class Playlist(models.Model):
 
     def __str__(self):
         return f"id={self.id}, title={self.title}"
-    
+
 
 class Video(models.Model):
     id = models.CharField(primary_key=True, max_length=300)
@@ -25,6 +25,7 @@ class Video(models.Model):
     def __str__(self):
         return f"id={self.id}, title={self.title}"
     
+
 class PlaylistVideo(models.Model):
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
@@ -32,6 +33,7 @@ class PlaylistVideo(models.Model):
 
     def __str__(self):
         return f"{self.playlist} - {self.video} position {self.position}"
+
 
 class UserPlaylist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

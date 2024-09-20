@@ -23,7 +23,11 @@
             <img src="{% static 'social_network/images/etube_small_logo.png' %}" height="50" alt="Etube Logo">
             <span>Etube</span>
           </a>
+          {% if authenticated %}
             <button class="login-btn" onclick="openModal()">Log In</button>
+          {% else %}
+            <a class="login-btn" href="{% url 'courses'%}?">Log in</a>
+          {% endif %}
         </div>
       </nav>
   
@@ -40,7 +44,7 @@
             <p class="subtitle mb-1">Find the length of any YouTube playlist</p>
             <form action="{% url 'playlist-length' %}" method="post">
                 <div class="input-group mb-3">
-                    <input type="text" id="playlist-input" class="form-control" name="playlist_id" placeholder="Enter playlist URL, ID, or video link">
+                    <input type="text" id="playlist-input" class="form-control" name="playlist_id" placeholder="Enter playlist URL or ID" required>
                     <button class="btn btn-dark" type="submit" id="analyze-btn">
                         <svg width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
                         <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
@@ -57,7 +61,11 @@
                 <div id="result" class="result" style="display: block;">
                     <div class="row">
                         <div class="col-md-6 mb-3 mb-md-0">
-                          <a class="playlist-thumbnail-container" onclick="openModal()">
+                          {% if not authenticated %}
+                            <a class="playlist-thumbnail-container" onclick="openModal()">
+                          {% else %}
+                            <a href="{% url 'course' playlist.id %}?">
+                          {% endif %}
                             <img id="playlist-thumbnail" src="{{ playlist.thumbnail }}" alt="Playlist Thumbnail" class="img-fluid rounded">
                             <div class="hover-text">
                               <span>Watch as online course</span>
@@ -93,7 +101,15 @@
                     </div>
                 </div>
             {% endif %}
+
             
+            
+            {% if error %}
+              <div id="error-message" class="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="alert-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span class="ms-1">Invalid playlist ID or URL. Please check and try again.</span>
+            </div>
+            {% endif %}
             <!-- Updated Login Modal -->
             <div id="loginModal" class="modal">
               <div class="modal-content">

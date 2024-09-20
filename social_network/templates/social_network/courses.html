@@ -2,6 +2,14 @@
 {% load static %}
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'social_network/css/courses.css' %}">
+
+{% if error %}
+    <div id="error-message" class="invalid-playlist mx-3 mt-3" style="display">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="ms-1">Invalid playlist ID or URL. Please enter a valid YouTube playlist URL or ID.</span>
+    </div>
+{% endif %}
+
 <div class="courses-container"> 
     <div class='course-progress-container mb-2'>
         <h1>Your Course Progress</h1>
@@ -17,7 +25,10 @@
                     </a>
                     <div class="course-info">
                         <span class="course-title">{{playlist.title}}</span>
-                        <a href="{% url 'course' playlist.id %}" class="start-button" >Start Course</a>
+                        <div class="button-container">
+                            <a href="{% url 'course' playlist.id %}" class="start-button" >Start Course</a>
+                            <a href="{% url 'delete' playlist.id %}" class="delete-button" >Delete Course</a>
+                        </div>
                         <div class="course-duration">2h 30m</div>
                         <div class="course-description">{{playlist.description}}</div>
                     </div>
@@ -35,6 +46,10 @@
                     </a>
                     <div class="course-info">
                         <span class="course-title">CSS Flexbox and Grid</span>
+                        <div class="button-container">
+                            <a href="{% url 'course' playlist.id %}" class="start-button" >Continue Course</a>
+                            <a href="{% url 'delete' playlist.id %}" class="delete-button" >Delete Course</a>
+                        </div>
                         <div class="course-progress">
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: {{playlist.percent_completed}}%;"></div>
@@ -50,7 +65,7 @@
     </div>
     <div class="course-section">
         {% if done %}
-            <h2>Not Started</h2>
+            <h2>Done</h2>
             {% for playlist in done%}
                 <div class="course-card">
                     <a href="{% url 'course' playlist.id %}?">
@@ -58,7 +73,9 @@
                     </a>
                     <div class="course-info">
                         <span class="course-title">{{playlist.title}}</span>
-                        <a href="{% url 'course' playlist.id %}" class="start-button" >Start Course</a>
+                        <div class="button-container">
+                            <a href="{% url 'delete' playlist.id %}" class="delete-button" >Delete Course</a>
+                        </div>
                         <div class="course-duration">2h 30m</div>
                         <div class="course-description">{{playlist.description}}</div>
                     </div>

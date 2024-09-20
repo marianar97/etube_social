@@ -62,6 +62,7 @@
     background: #0056d2;
     color: white;
     font-size: 1.2em;
+    text-decoration: none;
 }
 
 .login-btn:hover {
@@ -71,6 +72,14 @@
     transform: translateY(-2px);
 }
 
+.error-message {
+    display: flex;
+    align-items: center;
+    background-color: #fdeded;
+    color: #5f2120;
+    padding: 10px;
+    border-radius: 4px;
+}
 
 .playlist-thumbnail-container {
     position: relative;

@@ -1,5 +1,6 @@
 import re
 from django.http import HttpResponse, HttpRequest, JsonResponse
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render, get_object_or_404
 from django.forms.models import model_to_dict
 from urllib.parse import urlparse, parse_qs
@@ -12,6 +13,10 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 
 
+def delete_action(request:HttpRequest, playlist_id: str):
+    playlist_user = get_object_or_404(UserPlaylist, user=request.user, playlist__id=playlist_id)
+    playlist_user.delete()
+    return redirect(reverse('courses'))
 
 def logout_view(request):
     logout(request)
@@ -19,51 +24,26 @@ def logout_view(request):
 
 @login_required
 def courses_view(request: HttpRequest) -> HttpResponse:
-
-
-
+    extra_data = SocialAccount.objects.get(user=request.user).extra_data
+    user_input = request.GET.get('user_input')
+    not_started, in_progress, done = _get_user_courses_playlists(request.user)
+    context = {'not_started': not_started, 'in_progress': in_progress, 'done':done, 'picture': extra_data['picture']}
+    
+    if user_input:
+        try:
+            id = _get_playlsit_id(user_input)
+            playlist_details = _get_playlist_info(request, id )
+            return redirect(reverse('course', kwargs={'playlist_id': playlist_details['id']}))
+        except ValidationError:
+            context['error'] = True
+            return render(request, 'social_network/courses.html', context=context)
+        
     playlist_id = request.GET.get('playlist_id') 
     if playlist_id != '' and playlist_id is not None:
         return redirect(reverse('course', kwargs={'playlist_id':playlist_id}))
         # return course_view(request, playlist_id)
 
-    extra_data = SocialAccount.objects.get(user=request.user).extra_data
-    userplaylist_not_started = UserPlaylist.objects.filter(
-        user=request.user, 
-        percent_completed=0
-    )
-    not_started = Playlist.objects.filter(
-        userplaylist__in = userplaylist_not_started
-    )   
 
-    
-    userplaylist_in_progress = UserPlaylist.objects.filter(
-        user=request.user, 
-        percent_completed__gt=0,  
-        percent_completed__lt=100 
-    ).select_related('playlist')  # This fetches the related Playlist object
-
-    # Step 2: Build a dictionary with both Playlist details and percent_completed
-    in_progress_playlists = userplaylist_in_progress.values(
-        'playlist__id',               # Playlist ID
-        'playlist__title',            # Playlist title
-        'playlist__channel_title',    # Playlist channel title
-        'percent_completed',          # User's percent completed in the playlist,
-        'playlist__thumbnail',
-        'playlist__description'
-    )
-
-    # Output as a list of dictionaries
-    in_progress = list(in_progress_playlists)
-
-
-    done = Playlist.objects.filter(
-        userplaylist__in=UserPlaylist.objects.filter(
-            user=request.user, 
-            percent_completed=100
-        )
-    )     
-    context = {'not_started': not_started, 'in_progress': in_progress, 'done':done, 'picture': extra_data['picture']}
     return render(request, 'social_network/courses.html', context=context)
 
 @login_required
@@ -102,16 +82,19 @@ def course_view(request:HttpRequest, playlist_id: str):
     context = {'playlist': playlist, 'videos': videos, 'current_video': first_video, 'picture': extra_data['picture'] }
     return render(request, 'social_network/course.html', context)
 
-
-# Create your views here.
 def login_view(request: HttpRequest):
     return render(request, 'social_network/login.html')
 
 def playlist_length_view(request: HttpRequest):
+    if request.user.is_authenticated:
+        context = {'authenticated': True}
+    else:
+        context = {'authenticated': False}
+
     if request.method == "GET":
-        return render(request, 'social_network/playlist_length.html')
+        return render(request, 'social_network/playlist_length.html', context)
     
-    context = {"post": True}
+    context["post"] = True
     if request.method == "POST":
         if not 'playlist_id' in request.POST:
             context['message'] = 'Please enter a playlist identifier'
@@ -119,15 +102,50 @@ def playlist_length_view(request: HttpRequest):
         else:
             playlist_input = request.POST['playlist_id']
             id = _get_playlsit_id(playlist_input)
-            if not id:
-                context['message'] = 'Enter a valid Youtube url'
-                return render(request, 'social_network/playlist_length.html', context)
-            return _playlists_details_view(request, id)
+            return _playlists_details_view(request, id, context['authenticated'])
     
-def _playlists_details_view(request: HttpResponse, id:str ):
-    playlist_details = _get_playlist_info(request, id)
-    print(f'playlist details: {playlist_details}')
-    return render(request, 'social_network/playlist_length.html', {'post': True, 'playlist': playlist_details})
+def _playlists_details_view(request: HttpResponse, id:str, is_authenticated=False ):
+    try:
+        playlist_details = _get_playlist_info(request, id)
+    except ValidationError:
+        context = {'error': "Please enter a valid Youtube url or Playlist ID", "authenticated": is_authenticated}
+        return render(request, 'social_network/playlist_length.html', context=context)
+    return render(request, 'social_network/playlist_length.html', {'post': True, 'playlist': playlist_details, "authenticated": is_authenticated})
+
+def _get_user_courses_playlists(user):
+    userplaylist_not_started = UserPlaylist.objects.filter(
+        user=user,
+        percent_completed=0
+    )
+    not_started = Playlist.objects.filter(
+        userplaylist__in = userplaylist_not_started
+    )   
+    userplaylist_in_progress = UserPlaylist.objects.filter(
+        user=user, 
+        percent_completed__gt=0,  
+        percent_completed__lt=100 
+    ).select_related('playlist')  # This fetches the related Playlist object
+
+    #Build a dictionary with both Playlist details and percent_completed
+    in_progress_playlists = userplaylist_in_progress.values(
+        'playlist__id',               # Playlist ID
+        'playlist__title',            # Playlist title
+        'playlist__channel_title',    # Playlist channel title
+        'percent_completed',          # User's percent completed in the playlist,
+        'playlist__thumbnail',
+        'playlist__description'
+    )
+
+    # Output as a list of dictionaries
+    in_progress = list(in_progress_playlists)
+
+    done = Playlist.objects.filter(
+        userplaylist__in=UserPlaylist.objects.filter(
+            user=user, 
+            percent_completed=100
+        )
+    )
+    return not_started, in_progress, done
 
 def video_watched(request: HttpResponse) -> JsonResponse:
     video_id = request.POST.get('videoId')
@@ -190,7 +208,7 @@ def _get_playlist_info(request: HttpRequest, id: str) -> dict:
         _save_playlist_and_videos(playlist, videos)
     
     duration = _convert_seconds_to_hms(seconds)
-    str_duration = _get_video_str_duration(duration)
+    str_duration = _get_str_duration(duration)
     playlist['duration'] = str_duration
     return playlist
 
@@ -237,9 +255,9 @@ def _get_str_duration(duration: tuple):
     hours, mins, secs = duration
     dur = ""
     if hours > 0:
-        dur += f'{int(hours)} hours'
+        dur += f'{int(hours)} hours '
     if mins > 0:
-        dur += f"{int(mins)} minutes"
+        dur += f"{int(mins)} minutes "
     if secs > 0:
         dur += f"{int(secs)} seconds"
     return dur
@@ -251,6 +269,8 @@ def _get_playlist_details(playlist_id: str, youtube) -> dict:
     )
     response = request.execute()
     playlist = {'id': playlist_id}
+    if not response['items']:
+        raise ValidationError("Invalid Playlist Identifier")
     playlist_info = response['items'][0]['snippet']
     playlist['title'] = playlist_info['title']
     playlist['description'] = playlist_info['description']
@@ -366,10 +386,9 @@ def _get_youtube_id(url:str):
     return None
 
 def _get_playlsit_id(playlist_input: str):
-    if not _is_valid_youtube_url(playlist_input):
-        return None
-    id = _get_youtube_id(playlist_input)
-    return id
+    if _is_valid_youtube_url(playlist_input):
+        return _get_youtube_id(playlist_input)
+    return playlist_input
 
 def _is_valid_youtube_url(url):
     # Define a regular expression pattern for YouTube URLs

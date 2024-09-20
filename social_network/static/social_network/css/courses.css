@@ -61,10 +61,16 @@ h1 {
 }
 
 .course-icon {
-    height: 100%;
     margin-right: 10px;
     vertical-align: middle;
     border-radius: 5px;
+}
+
+.button-container{
+    float: right;
+    max-width: 20%;
+    display: flex;
+    flex-direction: column;
 }
 
 .course-info{
@@ -81,9 +87,11 @@ h1 {
 .course-description {
     margin-top: 5px;
     font-size: 14px;
+    height: 120px;
+    overflow: hidden;
 }
+
 .start-button {
-    float: right;
     background-color: #4285f4;
     color: white;
     border: none;
@@ -91,7 +99,23 @@ h1 {
     border-radius: 4px;
     cursor: pointer;
     text-decoration: none;
+    margin-bottom: 5px;
+}
+.delete-button {
+    background-color: rgb(235 46 46);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
 
+}
+.delete-button:hover {
+    background-color: white;
+    color: rgb(235 46 46);
+    box-shadow: 0 4px 6px rgba(0, 86, 210, 0.1);
+    transform: translateY(-2px);
 }
 
 .start-button:hover {
