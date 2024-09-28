@@ -1,3 +1,6 @@
+from configparser import ConfigParser
+from pathlib import Path
+from django.db.models import F
 import re
 from django.http import HttpResponse, HttpRequest, JsonResponse
 from django.core.exceptions import ValidationError
@@ -12,6 +15,10 @@ from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 
+CONFIG = ConfigParser()
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+CONFIG.read(BASE_DIR / "config.ini")
 
 def delete_action(request:HttpRequest, playlist_id: str):
     playlist_user = get_object_or_404(UserPlaylist, user=request.user, playlist__id=playlist_id)
@@ -27,8 +34,11 @@ def courses_view(request: HttpRequest) -> HttpResponse:
     extra_data = SocialAccount.objects.get(user=request.user).extra_data
     user_input = request.GET.get('user_input')
     not_started, in_progress, done = _get_user_courses_playlists(request.user)
-    context = {'not_started': not_started, 'in_progress': in_progress, 'done':done, 'picture': extra_data['picture']}
     
+    not_started = add_duration_to_playlist_queryset(not_started)
+    in_progress = add_duration_to_playlist_queryset(in_progress)
+    done = add_duration_to_playlist_queryset(done)
+    context = {'not_started': not_started, 'in_progress': in_progress, 'done':done, 'picture': extra_data['picture']}
     if user_input:
         try:
             id = _get_playlsit_id(user_input)
@@ -42,7 +52,6 @@ def courses_view(request: HttpRequest) -> HttpResponse:
     if playlist_id != '' and playlist_id is not None:
         return redirect(reverse('course', kwargs={'playlist_id':playlist_id}))
         # return course_view(request, playlist_id)
-
 
     return render(request, 'social_network/courses.html', context=context)
 
@@ -76,7 +85,9 @@ def course_view(request:HttpRequest, playlist_id: str):
     
     playlist = model_to_dict(playlist)
     playlist['percent_completed'] = int(user_playlist.percent_completed)
-    
+    duration = _convert_seconds_to_hms(playlist['seconds'])
+    playlist['duration'] = _get_str_duration(duration)
+
     extra_data = SocialAccount.objects.get(user=request.user).extra_data
 
     context = {'playlist': playlist, 'videos': videos, 'current_video': first_video, 'picture': extra_data['picture'] }
@@ -112,6 +123,20 @@ def _playlists_details_view(request: HttpResponse, id:str, is_authenticated=Fals
         return render(request, 'social_network/playlist_length.html', context=context)
     return render(request, 'social_network/playlist_length.html', {'post': True, 'playlist': playlist_details, "authenticated": is_authenticated})
 
+def add_duration_to_playlist_queryset(queryset):
+    playlists_list = []
+    for playlist in queryset:
+        try:
+            playlist = model_to_dict(playlist)
+        except Exception as e:
+            print(f"Error: {e}")
+            pass
+        duration = _convert_seconds_to_hms(playlist['seconds'])
+        playlist['duration'] = _get_str_duration(duration)
+        playlists_list.append(playlist)
+    return playlists_list
+
+
 def _get_user_courses_playlists(user):
     userplaylist_not_started = UserPlaylist.objects.filter(
         user=user,
@@ -127,17 +152,19 @@ def _get_user_courses_playlists(user):
     ).select_related('playlist')  # This fetches the related Playlist object
 
     #Build a dictionary with both Playlist details and percent_completed
-    in_progress_playlists = userplaylist_in_progress.values(
-        'playlist__id',               # Playlist ID
-        'playlist__title',            # Playlist title
-        'playlist__channel_title',    # Playlist channel title
-        'percent_completed',          # User's percent completed in the playlist,
-        'playlist__thumbnail',
-        'playlist__description'
+    in_progress = userplaylist_in_progress.values(
+        'percent_completed'  # Keep this as is, no renaming needed
+    ).annotate(
+        id=F('playlist__id'),
+        title=F('playlist__title'),
+        channel_title=F('playlist__channel_title'),
+        thumbnail=F('playlist__thumbnail'),
+        description=F('playlist__description'),
+        seconds=F('playlist__seconds')
     )
 
     # Output as a list of dictionaries
-    in_progress = list(in_progress_playlists)
+    # in_progress = list(in_progress_playlists)
 
     done = Playlist.objects.filter(
         userplaylist__in=UserPlaylist.objects.filter(
@@ -200,7 +227,7 @@ def _get_playlist_info(request: HttpRequest, id: str) -> dict:
         playlist = model_to_dict(playlist)
         seconds = playlist['seconds']
     else:
-        youtube = build('youtube', 'v3', developerKey="")
+        youtube = build('youtube', 'v3', developerKey=CONFIG.get("Django", "api_key"))
         playlist = _get_playlist_details(id, youtube)
         num_videos, seconds , videos = _get_playlist_videos_and_duration(id, youtube)
         playlist['num_videos'] = num_videos
@@ -216,15 +243,11 @@ def _get_video_str_duration(duration: tuple):
     hour, minutes, seconds = duration
     str_duration = ""
     if hour > 0:
-        str_duration += f'{hour}'
+        str_duration += f'{hour}h '
     if minutes > 0:
-        if hour > 0:
-            str_duration += f':'
-        str_duration += f'{minutes}'
+        str_duration += f'{minutes}m '
     if seconds > 0:
-        if minutes > 0:
-            str_duration += f':'
-        str_duration += f'{seconds}'
+        str_duration += f'{seconds}s'
     return str_duration
 
 def _save_playlist_and_videos(playlist: dict , videos: dict) -> None:

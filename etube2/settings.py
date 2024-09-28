@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-)3wnp89m%mf3%fv56wio-=ou4wu(8%_*5q%%@1rza#%ex+hbdk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.vercel.app']
 
 
 # Application definition
@@ -142,6 +142,8 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = 'playlist-length'
+
 
 SITE_ID = 2
 

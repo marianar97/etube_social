@@ -8,8 +8,7 @@
 }
 
 .course-progress{
-    width: 40%;
-    float:right;
+    width: 80%;
 }
 
 .courses-container h1 {
@@ -64,6 +63,10 @@ h1 {
     margin-right: 10px;
     vertical-align: middle;
     border-radius: 5px;
+}
+
+.course-icon:hover{
+    opacity: .7;
 }
 
 .button-container{

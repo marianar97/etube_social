@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Course Progress</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .search-bar {
+            float: right;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .course-section {
+            margin-bottom: 30px;
+        }
+        .course-section h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .course-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .course-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .course-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .course-duration {
+            color: #666;
+            font-size: 14px;
+        }
+        .course-description {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .start-button {
+            float: right;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .progress-bar {
+            background-color: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            background-color: #ffd700;
+            height: 100%;
+            border-radius: 4px;
+        }
+        .progress-text {
+            float: right;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Your Course Progress</h1>
+    <input type="text" class="search-bar" placeholder="Search courses">
+    
+    <div class="course-section">
+        <h2>Not Started</h2>
+        <div class="course-card">
+            <img src="/api/placeholder/24/24" alt="Course Icon" class="course-icon">
+            <span class="course-title">Introduction to React</span>
+            <button class="start-button">Start Course</button>
+            <div class="course-duration">2h 30m</div>
+            <div class="course-description">Learn the basics of React, including components, props, and state.</div>
+        </div>
+        <div class="course-card">
+            <img src="/api/placeholder/24/24" alt="Course Icon" class="course-icon">
+            <span class="course-title">Advanced JavaScript Concepts</span>
+            <button class="start-button">Start Course</button>
+            <div class="course-duration">3h 45m</div>
+            <div class="course-description">Dive deep into advanced JS topics like closures, prototypes, and async programming.</div>
+        </div>
+    </div>
+    
+    <div class="course-section">
+        <h2>In Progress</h2>
+        <div class="course-card">
+            <img src="/api/placeholder/24/24" alt="Course Icon" class="course-icon">
+            <span class="course-title">CSS Flexbox and Grid</span>
+            <div class="course-duration">1h 50m</div>
+            <div class="course-description">Master modern CSS layout techniques with Flexbox and Grid.</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 35%;"></div>
+            </div>
+            <span class="progress-text">35% complete</span>
+        </div>
+        <div class="course-card">
+            <img src="/api/placeholder/24/24" alt="Course Icon" class="course-icon">
+            <span class="course-title">Node.js Fundamentals</span>
+            <div class="course-duration">4h 20m</div>
+            <div class="course-description">Build server-side applications with Node.js and Express.</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 70%;"></div>
+            </div>
+            <span class="progress-text">70% complete</span>
+        </div>
+    </div>
+</body>
+</html>

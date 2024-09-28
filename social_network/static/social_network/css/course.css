@@ -15,7 +15,11 @@
     height: 100%;
 }
 
-
+.playlist-duration{
+    font-size: .7em;
+    font-weight: normal;
+    margin-left: 10px;
+}
 
 .invalid-playlist {
     display: flex;

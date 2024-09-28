@@ -11,14 +11,16 @@
             </div>
             <h1 class="video-title">{{current_video.title}}</h1>
             <div class="video-meta">
-                <span class="channel">{{channel_title}}</span> • 
-                <span class="views">1.2M views</span> • 
-                <span class="upload-time">2 weeks ago</span>
+                <span class="channel">{{channel_title}}</span>
+                {% comment %} <span class="views">1.2M views</span> •  {% endcomment %}
+                {% comment %} <span class="upload-time">2 weeks ago</span> {% endcomment %}
             </div>
         </div>
         <div class="col-lg-4">
             <div class="playlist-container">
-                <h3 class="playlist-title">{{playlist.title}}</h3>
+                <div>
+                    <h3 class="playlist-title">{{playlist.title}} <span class="playlist-duration">{{playlist.duration}}<span> </h3>
+                </div>
                 <div class="progress-container">
                     <div class="progress">
                         <div class="progress-bar" id="progressbar" role="progressbar" style="width: {{playlist.percent_completed}}%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>

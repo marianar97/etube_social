@@ -13,7 +13,7 @@
 <div class="courses-container"> 
     <div class='course-progress-container mb-2'>
         <h1>Your Course Progress</h1>
-        <input type="text" class="search-bar" placeholder="Search courses">
+        {% comment %} <input type="text" class="search-bar" placeholder="Search courses"> {% endcomment %}
     </div>
     <div class="course-section">
         {% if not_started %}
@@ -29,7 +29,7 @@
                             <a href="{% url 'course' playlist.id %}" class="start-button" >Start Course</a>
                             <a href="{% url 'delete' playlist.id %}" class="delete-button" >Delete Course</a>
                         </div>
-                        <div class="course-duration">2h 30m</div>
+                        <div class="course-duration">{{playlist.duration}}</div>
                         <div class="course-description">{{playlist.description}}</div>
                     </div>
                 </div>
@@ -41,8 +41,8 @@
             <h2>In Progress</h2>
             {% for playlist in in_progress%}
                 <div class="course-card">
-                    <a href="{% url 'course' playlist.playlist__id %}?">
-                        <img src={{playlist.playlist__thumbnail}} alt="Course Icon" class="course-icon">
+                    <a href="{% url 'course' playlist.id %}?">
+                        <img src={{playlist.thumbnail}} alt="Course Icon" class="course-icon">
                     </a>
                     <div class="course-info">
                         <span class="course-title">CSS Flexbox and Grid</span>
@@ -56,8 +56,8 @@
                             </div>
                             <span class="progress-text">{{playlist.percent_completed}}% complete</span>
                         </div>
-                        <div class="course-duration">1h 50m</div>
-                        <div class="course-description">{{playlist.playlist__description}}</div>
+                        <div class="course-duration">{{playlist.duration}}</div>
+                        <div class="course-description">{{playlist.description}}</div>
                     </div>
                 </div>
             {% endfor %}
@@ -76,7 +76,7 @@
                         <div class="button-container">
                             <a href="{% url 'delete' playlist.id %}" class="delete-button" >Delete Course</a>
                         </div>
-                        <div class="course-duration">2h 30m</div>
+                        <div class="course-duration">{{playlist.duration}}</div>
                         <div class="course-description">{{playlist.description}}</div>
                     </div>
                 </div>

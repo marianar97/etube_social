@@ -1,0 +1,4 @@
+*.pyc
+social_network/migrations
+*.pem
+config.ini

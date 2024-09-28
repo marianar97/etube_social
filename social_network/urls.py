@@ -7,8 +7,6 @@ urlpatterns = [
     path('', views.courses_view, name='courses'),
     path('course/<str:playlist_id>', views.course_view, name='course'),
     path('video-watched', views.video_watched, name='video-watched'),
-    path('courses/<str:playlist_id>', views.courses_view, name='courses'),
-    path('courses/', views.courses_view, name='courses'),
     path("logout", views.logout_view, name="logout"),
     path("delete/<str:playlist_id>", views.delete_action, name="delete"),
 ]
