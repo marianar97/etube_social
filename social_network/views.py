@@ -10,6 +10,7 @@ from urllib.parse import urlparse, parse_qs
 from django.urls import reverse
 from googleapiclient.discovery import build
 from datetime import timedelta
+from googleapiclient.errors import HttpError
 from .models import Playlist, PlaylistVideo, UserPlaylist, UserPlaylistVideo, Video
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import logout
@@ -44,7 +45,7 @@ def courses_view(request: HttpRequest) -> HttpResponse:
             id = _get_playlsit_id(user_input)
             playlist_details = _get_playlist_info(request, id )
             return redirect(reverse('course', kwargs={'playlist_id': playlist_details['id']}))
-        except ValidationError:
+        except (ValidationError, HttpError):
             context['error'] = True
             return render(request, 'social_network/courses.html', context=context)
         
@@ -118,7 +119,7 @@ def playlist_length_view(request: HttpRequest):
 def _playlists_details_view(request: HttpResponse, id:str, is_authenticated=False ):
     try:
         playlist_details = _get_playlist_info(request, id)
-    except ValidationError:
+    except (ValidationError, HttpError ):
         context = {'error': "Please enter a valid Youtube url or Playlist ID", "authenticated": is_authenticated}
         return render(request, 'social_network/playlist_length.html', context=context)
     return render(request, 'social_network/playlist_length.html', {'post': True, 'playlist': playlist_details, "authenticated": is_authenticated})
